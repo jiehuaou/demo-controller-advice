@@ -7,6 +7,29 @@
 - src/test/*
 
 ## Requirements:
+
+use **@RestControllerAdvice** to customize the exception output.
+```java
+@RestControllerAdvice
+public class FizzBuzzExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @ExceptionHandler(FizzException.class)
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    protected GlobalError handleFizzException(FizzException ex, WebRequest request) {
+        GlobalError error = new GlobalError("Fizz Exception has been thrown",
+                "Internal Server Error");
+        return error;
+    }
+    @ExceptionHandler(BuzzException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    protected GlobalError handlebuzzException(BuzzException ex, WebRequest request){
+        GlobalError error = new GlobalError("Buzz Exception has been thrown",
+                "Bad Request");
+        return error;
+    }
+}
+```
+
 Given a rest controller class `FizzBuzzController.java`, there is a `GET` API endpoint to be modified, which can throw three types of runtime exceptions:
 1. FizzException
 2. BuzzException
