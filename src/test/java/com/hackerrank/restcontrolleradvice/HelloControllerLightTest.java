@@ -1,5 +1,6 @@
 package com.hackerrank.restcontrolleradvice;
 
+import com.hackerrank.restcontrolleradvice.controller.HelloController;
 import com.hackerrank.restcontrolleradvice.controller.HelloService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -18,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * only load web layer, but you need to inject the dependency bean.
  */
-@WebMvcTest
+@WebMvcTest(controllers = {HelloController.class})
 public class HelloControllerLightTest {
     @Autowired
     private MockMvc mockMvc;
@@ -31,7 +32,9 @@ public class HelloControllerLightTest {
         // when
         Mockito.when(helloService.greet("333")).thenReturn("Hello, 333");
         // then
-        this.mockMvc.perform(get("/hello/333")).andDo(print()).andExpect(status().isOk())
+        this.mockMvc.perform(get("/hello/333"))
+                .andDo(print())
+                .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Hello, 333")));
     }
 }

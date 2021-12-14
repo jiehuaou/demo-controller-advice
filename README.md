@@ -16,16 +16,14 @@ public class FizzBuzzExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(FizzException.class)
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     protected GlobalError handleFizzException(FizzException ex, WebRequest request) {
-        GlobalError error = new GlobalError("Fizz Exception has been thrown",
+        return new GlobalError("Fizz Exception has been thrown",
                 "Internal Server Error");
-        return error;
     }
     @ExceptionHandler(BuzzException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     protected GlobalError handlebuzzException(BuzzException ex, WebRequest request){
-        GlobalError error = new GlobalError("Buzz Exception has been thrown",
+        return new GlobalError("Buzz Exception has been thrown",
                 "Bad Request");
-        return error;
     }
 }
 ```
@@ -108,4 +106,48 @@ mvn clean install
 - test: 
 ```bash
 mvn clean test
+```
+
+# heavy way to test controller
+the full Spring application context is started but without the server.
+```java
+@SpringBootTest
+@AutoConfigureMockMvc
+public class HelloControllerHeavyTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    public void shouldReturnDefaultMessage()  {
+        this.mockMvc.perform(get("/hello/333"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Hello, 333")));
+    }
+}
+```
+
+# light way to test controller
+only load web layer, but you need to inject the dependency bean.
+```java
+@WebMvcTest(controllers = {HelloController.class})
+public class HelloControllerLightTest {
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private HelloService helloService; // controller depends on this service
+
+    @Test
+    public void shouldReturnDefaultMessage()  {
+        // when
+        Mockito.when(helloService.greet("333")).thenReturn("Hello, 333");
+        // then
+        this.mockMvc.perform(get("/hello/333"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Hello, 333")));
+    }
+}
 ```
